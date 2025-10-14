@@ -87,14 +87,18 @@ src/
 
 当前使用Mock数据（15种食物），后续可以接入真实API。
 
-## 截图
+## 📸 截图
 
+> 截图待添加。查看 [截图添加指南](./docs/screenshots/README.md) 了解如何添加项目截图。
+
+<!-- 截图示例：
 <div align="center">
   <img src="./docs/screenshots/home.png" alt="首页" width="600"/>
   <p><em>盲盒抽取主界面</em></p>
 </div>
+-->
 
-## 开发文档
+## 📚 开发文档
 
 - [开发流程指南](./DEVELOPMENT_GUIDE.md)
 - [Git 使用指南](./GIT_GUIDE.md)

@@ -87,14 +87,18 @@ src/
 
 Currently uses mock data (15 food items), can be connected to real APIs in the future.
 
-## Screenshots
+## 📸 Screenshots
 
+> Screenshots coming soon. Check the [Screenshot Guide](./docs/screenshots/README.md) to learn how to add project screenshots.
+
+<!-- Screenshot example:
 <div align="center">
   <img src="./docs/screenshots/home.png" alt="Home Page" width="600"/>
   <p><em>Blind Box Draw Main Interface</em></p>
 </div>
+-->
 
-## Documentation
+## 📚 Documentation
 
 - [Development Guide](./DEVELOPMENT_GUIDE.md)
 - [Git Guide](./GIT_GUIDE.md)
