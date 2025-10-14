@@ -89,14 +89,12 @@ src/
 
 ## 📸 截图
 
-> 截图待添加。查看 [截图添加指南](./docs/screenshots/README.md) 了解如何添加项目截图。
-
-<!-- 截图示例：
 <div align="center">
-  <img src="./docs/screenshots/home.png" alt="首页" width="600"/>
-  <p><em>盲盒抽取主界面</em></p>
+  <img src="./docs/screenshots/result.png" alt="抽取结果展示" width="700"/>
+  <p><em>盲盒抽取结果 - 兰州拉面推荐界面</em></p>
 </div>
--->
+
+> 更多截图待添加。查看 [截图添加指南](./docs/screenshots/README.md) 了解如何添加更多项目截图。
 
 ## 📚 开发文档
 
