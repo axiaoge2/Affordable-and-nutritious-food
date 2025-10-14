@@ -94,14 +94,11 @@ src/
   <p><em>盲盒抽取结果 - 兰州拉面推荐界面</em></p>
 </div>
 
-> 更多截图待添加。查看 [截图添加指南](./docs/screenshots/README.md) 了解如何添加更多项目截图。
-
 ## 📚 开发文档
 
 - [开发流程指南](./DEVELOPMENT_GUIDE.md)
-- [Git 使用指南](./GIT_GUIDE.md)
 
-## 贡献
+## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！
 

@@ -94,14 +94,11 @@ Currently uses mock data (15 food items), can be connected to real APIs in the f
   <p><em>Blind Box Result - Lanzhou Ramen Recommendation</em></p>
 </div>
 
-> More screenshots coming soon. Check the [Screenshot Guide](./docs/screenshots/README.md) to learn how to add more screenshots.
-
 ## 📚 Documentation
 
 - [Development Guide](./DEVELOPMENT_GUIDE.md)
-- [Git Guide](./GIT_GUIDE.md)
 
-## Contributing
+## 🤝 Contributing
 
 Issues and Pull Requests are welcome!
 
