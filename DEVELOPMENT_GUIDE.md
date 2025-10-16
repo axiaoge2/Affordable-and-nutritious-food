@@ -374,6 +374,199 @@ console.log(getUserStats());
 
 ---
 
+## 🎨 前端动画优化记录
+
+### 最新优化 (2025-10-14)
+
+使用 Framer Motion 对所有组件进行了全面的动画优化：
+
+#### 1. BlindBox 组件优化
+- **盲盒按钮**: 添加脉冲光环效果，问号图标增加缩放动画
+- **抽取动画**: 新增8个粒子围绕旋转效果，多层光效叠加
+- **结果展示**:
+  - 12个烟花粒子爆炸效果
+  - 3D 翻转卡片进入动画
+  - 关闭按钮增加旋转悬停效果
+  - "再抽一次"按钮添加呼吸光效和阴影提升
+
+#### 2. FeedbackPanel 组件优化
+- **喜欢/不喜欢按钮**:
+  - 悬停时旋转倾斜效果
+  - 涟漪扩散动画
+  - 喜欢按钮添加持续脉冲光环
+- **情绪标签**:
+  - 旋转渐入动画（每个延迟80ms）
+  - 悬停时上浮 + 放大效果
+  - 闪光扫过效果（每2秒一次）
+  - Emoji 悬停摇摆动画
+
+#### 3. App.tsx 主页面优化
+- **特色卡片**:
+  - 3D 倾斜进入动画
+  - 悬停时上浮并添加阴影
+  - 背景渐变色淡入效果
+  - Emoji 图标悬停摇摆
+- **页脚**: 添加淡入动画和悬停颜色变化
+
+### 🎉 新增功能 (2025-10-14)
+
+#### 1. Toast 通知系统
+**位置**: `src/components/Toast.tsx`
+
+- 4种类型：success, error, warning, info
+- 自动关闭（默认3秒）
+- 流畅的进入/退出动画
+- 进度条显示剩余时间
+- 支持堆叠显示多个通知
+
+**使用方法**:
+```typescript
+showToast('操作成功！', 'success');
+showToast('发生错误', 'error');
+```
+
+#### 2. 五彩纸屑庆祝效果
+**位置**: `src/utils/confetti.ts`
+
+- 粒子爆炸动画
+- 重力和旋转效果
+- 随机颜色和大小
+- 自动清理机制
+
+**使用方法**:
+```typescript
+import { celebrateSuccess } from './utils/confetti';
+celebrateSuccess(); // 触发双重爆炸效果
+```
+
+#### 3. 食物详情模态框
+**位置**: `src/components/FoodDetailModal.tsx`
+
+- 全屏半透明背景遮罩
+- 弹簧动画进入效果
+- 渐变色头部装饰
+- 评分星星动画
+- 信息卡片布局
+- 点击外部关闭
+
+**特性**:
+- 显示完整食物信息
+- 价格对比和性价比展示
+- 位置信息
+- 所有标签展示
+- 5星评分系统
+
+#### 4. 历史记录追踪
+**位置**: `src/utils/history.ts`
+
+- 记录每次抽取历史
+- 保存喜欢/不喜欢状态
+- 记录情绪标签
+- 最多保留50条记录
+
+**统计功能**:
+- 累计抽取次数
+- 喜欢比率
+- 近7天抽取统计
+- 最爱类别和情绪
+
+**使用方法**:
+```typescript
+import { addToHistory, getHistoryStats } from './utils/history';
+
+// 添加记录
+addToHistory(food, true, ['开心']);
+
+// 获取统计
+const stats = getHistoryStats();
+```
+
+#### 5. 增强的统计面板
+**特性**:
+- 实时显示用户偏好
+- 历史数据卡片
+- 7天趋势统计
+- 喜欢比率百分比
+- 动画数字展示
+
+### 交互优化
+
+1. **抽到食物**: 显示成功Toast通知
+2. **点击喜欢**: 触发五彩纸屑 + Toast通知
+3. **标记情绪**: 五彩纸屑 + 情绪Toast
+4. **查看详情**: 打开美观的模态框
+5. **所有操作**: 自动记录到历史
+
+### 动画性能优化要点
+
+1. **合理使用 `transform`**: 所有动画优先使用 `scale`, `rotate`, `translate` 等 GPU 加速属性
+2. **避免 `layout` 动画**: 使用 `opacity` 和 `transform` 替代 `width`, `height` 变化
+3. **控制动画数量**: 粒子效果控制在 8-12 个以内
+4. **使用 `will-change`**: 大型动画组件添加 `will-change: transform`
+5. **延迟分批**: 多个元素动画使用 `delay` 和 `stagger` 分批执行
+
+### 测试检查清单
+
+启动开发服务器后访问 http://localhost:5173 验证：
+
+- [ ] 盲盒按钮有持续的脉冲光环
+- [ ] 点击抽取时粒子围绕旋转
+- [ ] 结果展示时有烟花爆炸效果
+- [ ] 卡片有 3D 翻转进入效果
+- [ ] 喜欢按钮有持续脉冲光环
+- [ ] 情绪标签悬停时上浮并放大
+- [ ] 情绪标签有闪光扫过效果
+- [ ] 特色卡片悬停时上浮
+- [ ] 所有动画流畅无卡顿
+
+### 如何修改动画参数
+
+在各组件文件中找到 `motion.*` 组件：
+
+```typescript
+// 修改动画持续时间
+transition={{ duration: 0.5 }}  // 改为你想要的秒数
+
+// 修改延迟
+transition={{ delay: 0.2 }}
+
+// 修改缓动函数
+transition={{ ease: "easeInOut" }}  // 可选: linear, easeIn, easeOut, easeInOut
+
+// 修改弹簧效果
+transition={{ type: "spring", stiffness: 100, damping: 15 }}
+
+// 修改悬停效果
+whileHover={{ scale: 1.1 }}  // 改变缩放比例
+```
+
+### Bug 修复记录 (2025-10-14)
+
+**问题**: BlindBox.tsx 第385行 JSX标签不匹配错误
+```
+Expected corresponding JSX closing tag for <motion.div>
+```
+
+**原因**: 在添加动画效果时，第265行开始的 `<motion.div className="card-apple relative">` 标签，在第385行错误地使用了 `</div>` 闭合，应该使用 `</motion.div>`
+
+**解决方案**:
+```typescript
+// 错误的写法 (第385行)
+              </div>
+            </div>  // 这里应该是 </motion.div>
+
+// 正确的写法
+              </div>
+            </motion.div>  // 正确闭合 motion.div 标签
+```
+
+**经验教训**:
+- 使用 Framer Motion 时，注意 `<motion.*>` 标签必须用对应的 `</motion.*>` 闭合
+- JSX 标签必须严格配对，motion 组件不能用普通 HTML 标签闭合
+- 修改后使用 `touch` 命令触发 HMR 热更新，清除 Vite 缓存错误
+
+---
+
 ## 🎯 快速命令参考
 
 ```bash
