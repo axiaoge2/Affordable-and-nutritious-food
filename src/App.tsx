@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import BlindBox from './components/BlindBox';
 import FeedbackPanel from './components/FeedbackPanel';
@@ -6,12 +6,16 @@ import FoodDetailModal from './components/FoodDetailModal';
 import { ToastContainer } from './components/Toast';
 import { ParticleBackground } from './components/ParticleBackground';
 import { FloatingActionButton } from './components/FloatingActionButton';
+import { AchievementPanel } from './components/AchievementPanel';
+import { AchievementUnlockNotification } from './components/AchievementUnlockNotification';
 import type { Food } from './types/food';
+import type { Achievement } from './types/achievement';
 import { EmotionTag } from './types/food';
-import { recommendFood, recordInteraction, getUserStats } from './utils/recommendation';
-import { addToHistory, getHistoryStats, clearHistory } from './utils/history';
+import { recommendFood, recordInteraction } from './utils/recommendation';
+import { addToHistory, clearHistory } from './utils/history';
 import { celebrateSuccess } from './utils/confetti';
-import { fadeInUp, slideInLeft, slideInRight, staggerContainer, staggerItem, viewport } from './utils/scrollReveal';
+import { fadeInUp, staggerContainer, staggerItem, viewport } from './utils/scrollReveal';
+import { loadUserStats, checkNewAchievements, recordVisit, updateUserStats } from './utils/achievementEngine';
 
 interface Toast {
   id: string;
@@ -25,6 +29,26 @@ function App() {
   const [showStats, setShowStats] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [userStats, setUserStats] = useState(() => loadUserStats());
+  const [latestAchievement, setLatestAchievement] = useState<Achievement | null>(null);
+
+  useEffect(() => {
+    recordVisit();
+    setUserStats(updateUserStats());
+  }, []);
+
+  const checkAndNotifyAchievements = () => {
+    const oldStats = userStats;
+    const { newlyUnlocked, newStats } = checkNewAchievements(oldStats);
+    
+    if (newlyUnlocked.length > 0) {
+      setLatestAchievement(newlyUnlocked[0]);
+      celebrateSuccess();
+      showToast(`🎉 解锁成就: ${newlyUnlocked[0].title}`, 'success');
+    }
+    
+    setUserStats(newStats);
+  };
 
   // 显示Toast通知
   const showToast = (message: string, type: Toast['type'] = 'info') => {
@@ -50,15 +74,17 @@ function App() {
   const handleResult = (food: Food) => {
     setCurrentFood(food);
     setShowFeedback(true);
-    addToHistory(food, false); // 先添加基础记录
+    addToHistory(food, false);
+    checkAndNotifyAchievements();
   };
 
   const handleLike = () => {
     if (currentFood) {
       recordInteraction(currentFood.id, true);
       addToHistory(currentFood, true);
-      celebrateSuccess(); // 触发五彩纸屑
+      celebrateSuccess();
       showToast('已添加到喜欢列表 ❤️', 'success');
+      checkAndNotifyAchievements();
       setShowFeedback(false);
       setCurrentFood(null);
     }
@@ -69,6 +95,7 @@ function App() {
       recordInteraction(currentFood.id, false);
       addToHistory(currentFood, false);
       showToast('已记录你的偏好', 'info');
+      checkAndNotifyAchievements();
       setShowFeedback(false);
       setCurrentFood(null);
     }
@@ -80,6 +107,7 @@ function App() {
       addToHistory(currentFood, true, [emotion]);
       celebrateSuccess();
       showToast(`标记为 ${emotion} 的感觉 ✨`, 'success');
+      checkAndNotifyAchievements();
       setShowFeedback(false);
       setCurrentFood(null);
     }
@@ -90,14 +118,11 @@ function App() {
     setShowDetailModal(true);
   };
 
-  const stats = getUserStats();
-  const historyStats = getHistoryStats();
-
   // 悬浮按钮操作
   const floatingActions = [
     {
       icon: '📊',
-      label: showStats ? '隐藏统计' : '查看统计',
+      label: showStats ? '隐藏成就' : '查看成就',
       onClick: () => setShowStats(!showStats),
       color: 'text-apple-blue'
     },
@@ -131,6 +156,19 @@ function App() {
 
       {/* Toast通知容器 */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+      {/* 成就解锁通知 */}
+      <AchievementUnlockNotification
+        achievement={latestAchievement}
+        onClose={() => setLatestAchievement(null)}
+      />
+
+      {/* 成就面板 */}
+      <AchievementPanel
+        userStats={userStats}
+        isOpen={showStats}
+        onClose={() => setShowStats(false)}
+      />
 
       {/* 食物详情模态框 */}
       <FoodDetailModal
@@ -177,148 +215,13 @@ function App() {
                        text-white font-semibold shadow-lg hover:shadow-xl
                        transition-all border-2 border-white/30"
           >
-            {showStats ? '隐藏统计' : '我的喜好 ✨'}
+            {showStats ? '隐藏成就' : '成就与统计 🏆'}
           </motion.button>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Stats Panel - Glassmorphism */}
-        {showStats && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="relative bg-gradient-to-br from-white/70 via-white/60 to-white/50
-                       backdrop-blur-2xl rounded-[32px] p-8 shadow-2xl
-                       border-2 border-white/40 mb-8 overflow-hidden"
-          >
-            {/* 装饰性背景渐变 */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl"></div>
-
-            <div className="relative z-10">
-              <motion.h2
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600
-                           bg-clip-text text-transparent mb-6 flex items-center gap-3"
-              >
-                <span className="text-4xl">📊</span>
-                我的喜好统计
-              </motion.h2>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {[
-                  { value: stats.interactionCount, label: '总互动次数', color: 'from-blue-500 to-cyan-500', icon: '🎯' },
-                  { value: stats.likedCount, label: '喜欢的食物', color: 'from-green-500 to-emerald-500', icon: '❤️' },
-                  { value: stats.favoriteCategory, label: '最爱类别', color: 'from-orange-500 to-red-500', icon: '🏆' },
-                  { value: stats.favoriteEmotion, label: '偏好情绪', color: 'from-purple-500 to-pink-500', icon: '✨' },
-                ].map((stat, index) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{
-                      scale: 1.05,
-                      y: -5,
-                      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)'
-                    }}
-                    className="relative bg-white/60 backdrop-blur-xl rounded-3xl p-6 text-center
-                               border-2 border-white/50 shadow-xl overflow-hidden group"
-                  >
-                    {/* 悬停渐变背景 */}
-                    <motion.div
-                      className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10`}
-                      transition={{ duration: 0.3 }}
-                    />
-
-                    <div className="relative z-10">
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.1, 1],
-                          rotate: [0, 5, -5, 0],
-                        }}
-                        transition={{
-                          duration: 3,
-                          repeat: Infinity,
-                          delay: index * 0.3,
-                          ease: "easeInOut"
-                        }}
-                        className="text-4xl mb-3"
-                      >
-                        {stat.icon}
-                      </motion.div>
-                      <div className={`text-4xl font-bold bg-gradient-to-r ${stat.color}
-                                      bg-clip-text text-transparent mb-2`}>
-                        {stat.value}
-                      </div>
-                      <div className="text-sm text-apple-gray-600 font-medium">
-                        {stat.label}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* 历史统计 */}
-            {historyStats.totalDraws > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="mt-6 p-4 bg-gradient-to-r from-purple-100/80 to-pink-100/80 backdrop-blur-lg rounded-2xl border border-purple-200/30"
-              >
-                <h3 className="text-sm font-semibold text-apple-gray-700 mb-3">
-                  📊 历史数据
-                </h3>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-purple-600">
-                      {historyStats.totalDraws}
-                    </div>
-                    <div className="text-xs text-apple-gray-600 mt-1">
-                      累计抽取
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-pink-600">
-                      {historyStats.likeRate}%
-                    </div>
-                    <div className="text-xs text-apple-gray-600 mt-1">
-                      喜欢比率
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {historyStats.recentDrawsCount}
-                    </div>
-                    <div className="text-xs text-apple-gray-600 mt-1">
-                      近7天抽取
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {stats.interactionCount < 5 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-4 p-4 bg-blue-50 rounded-xl"
-              >
-                <p className="text-sm text-blue-700 text-center">
-                  💡 多与食物互动几次，系统会根据你的喜好智能推荐哦！
-                  (当前 {stats.interactionCount}/5)
-                </p>
-              </motion.div>
-            )}
-            </div>
-          </motion.div>
-        )}
-
         {/* Hero Section - Scroll Reveal */}
         <motion.div
           initial="hidden"

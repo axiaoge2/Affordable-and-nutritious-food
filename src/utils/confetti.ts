@@ -49,7 +49,7 @@ export const triggerConfetti = (config: ConfettiConfig = {}) => {
     let vx = Math.cos(angle) * velocity;
     let vy = Math.sin(angle) * velocity - Math.random() * 10;
     let rotation = Math.random() * 360;
-    let rotationSpeed = (Math.random() - 0.5) * 20;
+    const rotationSpeed = (Math.random() - 0.5) * 20;
     let opacity = 1;
 
     const animate = () => {
