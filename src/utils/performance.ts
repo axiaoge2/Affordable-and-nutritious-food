@@ -129,11 +129,12 @@ export const measurePerformance = <T>(
  * @param wait - Wait time in milliseconds
  * @returns Debounced function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
 
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
@@ -141,7 +142,7 @@ export const debounce = <T extends (...args: any[]) => any>(
       func(...args);
     };
 
-    if (timeout) {
+    if (timeout !== null) {
       clearTimeout(timeout);
     }
 
@@ -157,9 +158,9 @@ export const debounce = <T extends (...args: any[]) => any>(
 export const requestIdleCallback = (
   callback: () => void,
   options?: { timeout?: number }
-) => {
+): ReturnType<typeof setTimeout> => {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    return window.requestIdleCallback(callback, options);
+    return window.requestIdleCallback(callback, options) as number;
   }
 
   // Fallback to setTimeout
@@ -170,9 +171,9 @@ export const requestIdleCallback = (
  * Cancel idle callback
  * @param id - ID returned from requestIdleCallback
  */
-export const cancelIdleCallback = (id: number) => {
+export const cancelIdleCallback = (id: ReturnType<typeof setTimeout>) => {
   if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-    return window.cancelIdleCallback(id);
+    return window.cancelIdleCallback(id as number);
   }
 
   clearTimeout(id);
@@ -185,16 +186,23 @@ export const cancelIdleCallback = (id: number) => {
 export const isLowEndDevice = (): boolean => {
   if (typeof navigator === 'undefined') return false;
 
+  const extendedNavigator = navigator as Navigator & {
+    deviceMemory?: number;
+    connection?: {
+      effectiveType?: string;
+    };
+  };
+
   const factors: boolean[] = [
     // Low CPU cores
-    navigator.hardwareConcurrency ? navigator.hardwareConcurrency <= 2 : false,
+    extendedNavigator.hardwareConcurrency ? extendedNavigator.hardwareConcurrency <= 2 : false,
 
     // Low memory (< 4GB)
-    (navigator as any).deviceMemory ? (navigator as any).deviceMemory < 4 : false,
+    extendedNavigator.deviceMemory !== undefined ? extendedNavigator.deviceMemory < 4 : false,
 
     // Slow connection
-    (navigator as any).connection?.effectiveType
-      ? ['slow-2g', '2g', '3g'].includes((navigator as any).connection.effectiveType)
+    extendedNavigator.connection?.effectiveType
+      ? ['slow-2g', '2g', '3g'].includes(extendedNavigator.connection.effectiveType)
       : false,
   ];
 

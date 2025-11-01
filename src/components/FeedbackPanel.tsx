@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { EmotionTag } from '../types/food';
-import { getParticleCount, prefersReducedMotion } from '../utils/performance';
+import { getParticleCount } from '../utils/performance';
 
 interface FeedbackPanelProps {
   onLike: () => void;
@@ -15,7 +15,6 @@ const FeedbackPanel = ({ onLike, onDislike, onEmotionSelect, showEmotions = fals
   const rippleCount = getParticleCount(2);
   const starCount = getParticleCount(4);
   const emotionParticles = getParticleCount(2);
-  const reducedMotion = prefersReducedMotion();
 
   const emotions = [
     { tag: EmotionTag.HAPPY, emoji: '😊', color: 'from-yellow-400 to-orange-400' },

@@ -1,7 +1,7 @@
 import { useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Food } from '../types/food';
-import { getParticleCount, prefersReducedMotion } from '../utils/performance';
+import { getParticleCount } from '../utils/performance';
 
 interface BlindBoxProps {
   onDrawFood: () => Food;
@@ -18,7 +18,6 @@ const BlindBox = ({ onDrawFood, onResult }: BlindBoxProps) => {
   const drawingRings = getParticleCount(2);
   const drawingParticlesPerRing = getParticleCount(6);
   const fireworkParticles = getParticleCount(8);
-  const reducedMotion = prefersReducedMotion();
 
   const handleDraw = () => {
     if (isDrawing) return;
